@@ -172,7 +172,7 @@ bot.on('message', async (msg) => {
     let redditSucces = false;
 
     // Platform checks and downloads using gallery-dl
-    if (text.includes(tiktok)) {
+    if (text.includes('tiktok')) {
         await addReactioN(token, msg.chat.id, msg.message_id, '👍');
         try {
             await execPromise(`gallery-dl --cookies ./cookies/tiktokcookies.txt -o base-directory=${userDir} -o directory="" "${text}"`);
@@ -180,7 +180,7 @@ bot.on('message', async (msg) => {
         } catch (error) {
             console.log(error);
         }
-    } else if (text.includes(instagram)) {
+    } else if (text.includes('instagram')) {
         await addReactioN(token, msg.chat.id, msg.message_id, '👍');
         try {
             await execPromise(`gallery-dl --cookies ./cookies/instagramcookies.txt -o base-directory=${userDir} -o directory="" "${text}"`);
@@ -188,7 +188,7 @@ bot.on('message', async (msg) => {
         } catch (error) {
             console.log(error);
         }
-    } else if (text.includes(x)) {
+    } else if (text.includes('x')) {
         await addReactioN(token, msg.chat.id, msg.message_id, '👍');
         try {
             await execPromise(`gallery-dl --cookies ./cookies/xcookies.txt -o base-directory=${userDir} -o directory="" "${text}"`);
@@ -196,7 +196,7 @@ bot.on('message', async (msg) => {
         } catch (error) {
             console.log(error);
         }
-    } else if (text.includes(reddit)) {
+    } else if (text.includes('reddit')) {
         await addReactioN(token, msg.chat.id, msg.message_id, '👍');
         try {
             await execPromise(`gallery-dl -o base-directory=${userDir} -o directory="" "${text}"`);
