@@ -102,7 +102,7 @@ bot.onText(/\/help/, (msg) => {
 
 // /update command (admin only)
 bot.onText(/\/update/, (msg) => {
-    if (msg.chat.id !== 1254701058) {
+    if (msg.chat.id !== "YOUR ChatID") {
         return bot.sendMessage(msg.chat.id, 'You cannot use this command.');
     }
 
@@ -117,7 +117,7 @@ bot.onText(/\/update/, (msg) => {
 
 // /finish command (admin only)
 bot.onText(/\/finish/, (msg) => {
-    if (msg.chat.id !== 1254701058) {
+    if (msg.chat.id !== "YOUR ChatID") {
         return bot.sendMessage(msg.chat.id, 'You cannot use this command.');
     }
 
