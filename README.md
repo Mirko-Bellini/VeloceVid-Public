@@ -26,7 +26,7 @@ Clone the repository using `git`:
 ```bash
 git clone https://github.com/Mirko-Bellini/VeloceVid-Public.git
 
-cd velocevid
+cd VeloceVid-Public
 ```
 Make sure you have Node.js and Python installed on your system.
 
