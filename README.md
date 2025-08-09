@@ -9,13 +9,13 @@ It is available publicly on Telegram at [@VeloceVid_bot](https://t.me/VeloceVid_
 
 ## 📑 Index
 
-- [🔧 Installation](#-installation)
-- [⚙️ Configuration](#️-configuration)
-- [🚀 How to Use](#-how-to-use)
-- [🔐 Cookies](#-cookies)
-- [📁 Project Structure](#-project-structure)
-- [✅ Disclaimer](#-disclaimer)
-- [🧠 Notes](#-notes)
+- 🔧 [Installation](#-installation)
+- ⚙️ [Configuration](#️-configuration)
+- 🚀 [How to Use](#-how-to-use)
+- 🔐 [Cookies](#-cookies)
+- 📁 [Project Structure](#-project-structure)
+- ✅ [Disclaimer](#-disclaimer)
+- 🧠 [Notes](#-notes)
 
 ---
 
