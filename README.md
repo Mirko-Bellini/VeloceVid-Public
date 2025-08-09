@@ -88,7 +88,15 @@ npm installs
 
 ## 🚀 How to Use
 The bot is built using Node.js and the node-telegram-bot-api package.
-To start the bot:
+
+## 1. Create the .env File
+Before starting the bot, create a file named .env in the root directory of the project and add your bot token:
+```bash
+TOKEN="Your token bot here"
+```
+
+## 2. Start the Bot
+Run the bot with:
 ```bash
 node index.js
 ```
