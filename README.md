@@ -24,7 +24,7 @@ It is available publicly on Telegram at [@VeloceVid_bot](https://t.me/VeloceVid_
 Clone the repository using `git`:
 
 ```bash
-git clone https://github.com/yourusername/velocevid.git
+git clone https://github.com/Mirko-Bellini/VeloceVid-Public.git
 
 cd velocevid
 ```
