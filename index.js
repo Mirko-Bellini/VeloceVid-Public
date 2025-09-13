@@ -121,12 +121,16 @@ bot.onText(/\/finish/, (msg) => {
         return bot.sendMessage(msg.chat.id, 'You cannot use this command.');
     }
 
+    const text=msg.text;
+    const newText=text.replace('/finish', '').trim();
+
+
     const users = jn.get('users');
     const tuttiGliId = users.map(entry => entry.user.id);
 
-    // Notify all users that bot is back online
+    // Notify all users that bot is back online with a personalized message
     tuttiGliId.forEach(chatId => {
-        bot.sendMessage(chatId, '✅ The bot is now online and ready to use.');
+        bot.sendMessage(chatId, `✅ The bot is now online and ready to use. ${newText}`);
     });
 });
 
@@ -170,6 +174,7 @@ bot.on('message', async (msg) => {
     let instagramSucess = false;
     let xSuccess = false;
     let redditSucces = false;
+    let youtubeSucess = false;
 
     // Platform checks and downloads using gallery-dl
     if (text.includes('tiktok')) {
@@ -204,13 +209,23 @@ bot.on('message', async (msg) => {
         } catch (error) {
             console.log(error);
         }
-    } else {
+    } else if (text.includes('youtube') || text.includes('youtu.be')){
+        await addReactioN(token, msg.chat.id, msg.message_id, '👍');
+        try{
+            const outputTemplate = path.join(userDir, "%(title)s.%(ext)s");
+            await execPromise(`yt-dlp -o "${outputTemplate}" "${text}"`);
+            youtubeSucess = true;
+        } catch (error) {
+            console.log(error);
+        }
+    }
+     else {
         await addReactioN(token, msg.chat.id, msg.message_id, '💔');
         return bot.sendMessage(msg.chat.id, 'This kind of video I can not yet download, for any help type /help.');
     }
 
     // If no platform succeeded
-    if (!instagramSucess && !tiktokSucess && !xSuccess && !redditSucces) {
+    if (!instagramSucess && !tiktokSucess && !xSuccess && !redditSucces && !youtubeSucess) {
         await addReactioN(token, msg.chat.id, msg.message_id, '💔');
         return bot.sendMessage(msg.chat.id, "Error in download, for any help type /help", { reply_to_message_id: msg.message_id });
     }
@@ -351,6 +366,7 @@ bot.on('message', async (msg) => {
         });
     }
 });
+
 
 // Function to add a reaction to a message
 async function addReactioN(token, msgChatId, msgMessageId, emoji) {
