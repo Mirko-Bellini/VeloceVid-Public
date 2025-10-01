@@ -81,7 +81,7 @@ sudo apt install ffmpeg
 ## Node.js Dependencies:
 Install the required Node.js modules (`including node-telegram-bot-api`):
 ```bash
-npm installs
+npm install
 ```
 
 ---
