@@ -102,7 +102,7 @@ bot.onText(/\/help/, (msg) => {
 
 // /update command (admin only)
 bot.onText(/\/update/, (msg) => {
-    if (msg.chat.id !== "YOUR ChatID") {
+    if (msg.chat.id !== "Your ChatID") {
         return bot.sendMessage(msg.chat.id, 'You cannot use this command.');
     }
 
@@ -117,7 +117,7 @@ bot.onText(/\/update/, (msg) => {
 
 // /finish command (admin only)
 bot.onText(/\/finish/, (msg) => {
-    if (msg.chat.id !== "YOUR ChatID") {
+    if (msg.chat.id !== "Your ChatID") {
         return bot.sendMessage(msg.chat.id, 'You cannot use this command.');
     }
 
@@ -193,7 +193,7 @@ bot.on('message', async (msg) => {
         } catch (error) {
             console.log(error);
         }
-    } else if (text.includes('x')) {
+    } else if (text.includes('x.com')) {
         await addReactioN(token, msg.chat.id, msg.message_id, '👍');
         try {
             await execPromise(`gallery-dl --cookies ./cookies/xcookies.txt -o base-directory=${userDir} -o directory="" "${text}"`);
@@ -201,10 +201,10 @@ bot.on('message', async (msg) => {
         } catch (error) {
             console.log(error);
         }
-    } else if (text.includes('reddit')) {
+    } else if (text.includes('reddit.com')) {
         await addReactioN(token, msg.chat.id, msg.message_id, '👍');
         try {
-            await execPromise(`gallery-dl -o base-directory=${userDir} -o directory="" "${text}"`);
+            await execPromise(`gallery-dl --cookies ./cookies/redditcookies.txt -o base-directory=${userDir} -o directory="" "${text}"`);
             redditSucces = true;
         } catch (error) {
             console.log(error);
@@ -232,16 +232,16 @@ bot.on('message', async (msg) => {
 
     // List downloaded files
     const files = fs.readdirSync(userDir).filter(file =>
-        file.endsWith('.mp4') || file.endsWith('.jpg') || file.endsWith('.png') || file.endsWith('.webp')
+        file.endsWith('.mp4') || file.endsWith('.jpg') || file.endsWith('.png') || file.endsWith('.webp') || file.endsWith('.webm')
     );
 
-    const mp4File = files.find(file => file.endsWith('.mp4'));
+    const video = files.find(file => file.endsWith('.mp4') || file.endsWith('.webm'));
     const photo = files.find(file => file.endsWith('.jpg') || file.endsWith('.png') || file.endsWith('.webp'));
 
     // Handling single file downloads
     if (files.length === 1) {
-        if (mp4File) {
-            const inputPath = path.join(userDir, mp4File);
+        if (video) {
+            const inputPath = path.join(userDir, video);
             const stats = fs.statSync(inputPath);
             const fileSizeInBytes = stats.size;
             const maxSize = 50 * 1024 * 1024;
@@ -250,10 +250,10 @@ bot.on('message', async (msg) => {
             if (fileSizeInBytes > maxSize) {
                 bot.sendMessage(msg.chat.id, '⚠️ The video is too large and will be compressed...', { reply_to_message_id: msg.message_id });
 
-                const compressedTempPath = path.join(userDir, 'compresso_' + mp4File);
+                const compressedTempPath = path.join(userDir, 'compresso_' + video);
 
                 await execPromise(`ffmpeg -i "${inputPath}" -vf scale=1280:-2 -b:v 800k -c:v libx264 -preset medium -c:a aac "${compressedTempPath}"`);
-                fs.unlinkSync(path.join(userDir, mp4File));
+                fs.unlinkSync(path.join(userDir, video));
 
                 const file = fs.createReadStream(path.join(compressedTempPath));
                 bot.sendVideo(msg.chat.id, file, {
@@ -266,14 +266,14 @@ bot.on('message', async (msg) => {
                 });
 
             } else {
-                const file = fs.createReadStream(path.join(userDir, mp4File));
+                const file = fs.createReadStream(path.join(userDir, video));
                 bot.sendVideo(msg.chat.id, file, {
-                    filename: mp4File,
+                    filename: video,
                     contentType: 'video/mp4',
                     caption: 'Here is the video. 😻 - @VeloceVid_bot',
                     reply_to_message_id: msg.message_id,
                 }).then(() => {
-                    fs.unlinkSync(path.join(userDir, mp4File));
+                    fs.unlinkSync(path.join(userDir, video));
                 });
             }
         } else {
@@ -289,7 +289,7 @@ bot.on('message', async (msg) => {
         }
     } else {
         // Handle multiple files
-        const videos = files.filter(file => file.endsWith('.mp4'));
+        const videos = files.filter(file => file.endsWith('.mp4') || file.endsWith('.webm'));
         const chunkArray = (arr, size) => {
             const chunks = [];
             for (let i = 0; i < arr.length; i += size) {
@@ -316,7 +316,7 @@ bot.on('message', async (msg) => {
         }
 
         // Send videos in chunks of 2
-        if (mp4File) {
+        if (video) {
             const smallChunks = chunkArray(videos, 2);
 
             for (const group of smallChunks) {
