@@ -138,7 +138,7 @@ bot.onText(/\/finish/, (msg) => {
 bot.on('message', (msg) => {
     if (!utente) return;
 
-    let users = jn.get('users') || []; 
+    let user = jn.get('users') || []; 
     const esiste = users.some(entry => entry.user.id === msg.chat.id);
 
     if (!esiste) {
@@ -146,6 +146,11 @@ bot.on('message', (msg) => {
         jn.set('users', users);
         jn.save();
     }
+});
+
+//Control erorr polling
+bot.on("polling_error", (error) => {
+    console.error("Polling error: ", error)
 });
 
 // Main message handler for downloading videos
@@ -174,7 +179,7 @@ bot.on('message', async (msg) => {
     let instagramSucess = false;
     let xSuccess = false;
     let redditSucces = false;
-    let youtubeSucess = false;
+    let other = false;
 
     // Platform checks and downloads using gallery-dl
     if (text.includes('tiktok')) {
@@ -209,23 +214,19 @@ bot.on('message', async (msg) => {
         } catch (error) {
             console.log(error);
         }
-    } else if (text.includes('youtube') || text.includes('youtu.be')){
-        await addReactioN(token, msg.chat.id, msg.message_id, '👍');
+    } else {
+        await addReactioN(token, msg.chat.id, msg.message_id, '👀');
         try{
             const outputTemplate = path.join(userDir, "%(title)s.%(ext)s");
-            await execPromise(`yt-dlp -o "${outputTemplate}" "${text}"`);
-            youtubeSucess = true;
+            await execPromise(`yt-dlp -o "${outputTemplate}" -Uv "${text}"`);
+            other = true;
         } catch (error) {
             console.log(error);
         }
     }
-     else {
-        await addReactioN(token, msg.chat.id, msg.message_id, '💔');
-        return bot.sendMessage(msg.chat.id, 'This kind of video I can not yet download, for any help type /help.');
-    }
 
     // If no platform succeeded
-    if (!instagramSucess && !tiktokSucess && !xSuccess && !redditSucces && !youtubeSucess) {
+    if (!instagramSucess && !tiktokSucess && !xSuccess && !redditSucces && !other) {
         await addReactioN(token, msg.chat.id, msg.message_id, '💔');
         return bot.sendMessage(msg.chat.id, "Error in download, for any help type /help", { reply_to_message_id: msg.message_id });
     }
@@ -250,20 +251,26 @@ bot.on('message', async (msg) => {
             if (fileSizeInBytes > maxSize) {
                 bot.sendMessage(msg.chat.id, '⚠️ The video is too large and will be compressed...', { reply_to_message_id: msg.message_id });
 
-                const compressedTempPath = path.join(userDir, 'compresso_' + video);
+                const baseName = path.parse(video).name;
+                const outputFile = path.join(userDir, `compresso_${baseName}.mp4`);
 
-                await execPromise(`ffmpeg -i "${inputPath}" -vf scale=1280:-2 -b:v 800k -c:v libx264 -preset medium -c:a aac "${compressedTempPath}"`);
-                fs.unlinkSync(path.join(userDir, video));
+                await execPromise(`ffmpeg -i "${inputPath}" -vf scale=1280:-2 -b:v 800k -c:v libx264 -preset medium -c:a aac "${outputFile}" 2>&1`);
 
-                const file = fs.createReadStream(path.join(compressedTempPath));
+                if (fs.existsSync(path.join(userDir, video))) {
+                    fs.unlinkSync(path.join(userDir, video));
+                }
+
+                const file = fs.createReadStream(outputFile);
+
                 bot.sendVideo(msg.chat.id, file, {
-                    filename: compressedTempPath,
+                    filename: path.basename(outputFile),
                     contentType: 'video/mp4',
                     caption: 'Here is the video. 😻 - @VeloceVid_bot',
                     reply_to_message_id: msg.message_id,
                 }).then(() => {
-                    fs.unlinkSync(path.join(compressedTempPath));
+                    fs.unlinkSync(outputFile);
                 });
+
 
             } else {
                 const file = fs.createReadStream(path.join(userDir, video));
