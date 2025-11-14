@@ -320,7 +320,7 @@ bot.on('message', async (msg) => {
             bot.sendPhoto(msg.chat.id, file, {
                 filename: photo,
                 contentType: 'photo',
-                caption: `Here are pictures\\. 😻 \\- @VeloceVid\\_bot\n> ${caption}`,
+                caption: `Here are pictures\\. 😻 \\- @VeloceVid\\_bot\n>${caption}`,
                 reply_to_message_id: msg.message_id,
                 parse_mode: 'MarkdownV2'
             }).then(() => {
