@@ -56,7 +56,7 @@ bot.on('message', (msg) => {
 
 // Event listener for inline button clicks
 bot.on('callback_query', (callbackQuery) => {
-    const msg = callbackQuery.message; 
+    const msg = callbackQuery.message;
     const utenti = msg.chat.id;
     let verificati = jn2.get('verificati') || [];
 
@@ -100,9 +100,9 @@ bot.onText(/\/help/, (msg) => {
     bot.sendMessage(msg.chat.id, "👋 Hi there! \n\n I am a bot that helps you download videos from these platforms: \n • TikTok \n • Instagram \n • X \n • Reddit \n And many other social networks (For the moment only TikTok and Instagram). \n\n How it works: \n 🔗 Just send me a link to the video you want to download. \n 📥 If the link is valid, I will send you the video (or a file to download). \n\n ❗ Important: make sure the link is public and does not require login. \n\n If something does not work, try to send me the link again. \n\n⚠️ New features coming soon:\n- Support for more social platforms\n- Special group features (automatic downloads and group-specific settings!)");
 });
 
-// /update command (admin only)
-bot.onText(/\/update/, (msg) => {
-    if (msg.chat.id !== "Your ChatID") {
+// /off command (admin only)
+bot.onText(/\/off/, (msg) => {
+    if (msg.chat.id !== Your ChatID) {
         return bot.sendMessage(msg.chat.id, 'You cannot use this command.');
     }
 
@@ -117,12 +117,12 @@ bot.onText(/\/update/, (msg) => {
 
 // /finish command (admin only)
 bot.onText(/\/finish/, (msg) => {
-    if (msg.chat.id !== "Your ChatID") {
+    if (msg.chat.id !== Your ChatID) {
         return bot.sendMessage(msg.chat.id, 'You cannot use this command.');
     }
 
-    const text=msg.text;
-    const newText=text.replace('/finish', '').trim();
+    const text = msg.text;
+    const newText = text.replace('/finish', '').trim();
 
 
     const users = jn.get('users');
@@ -134,11 +134,29 @@ bot.onText(/\/finish/, (msg) => {
     });
 });
 
+// /update command (admin only)
+bot.onText(/\/update/, (msg) => {
+    if (msg.chat.id !== Your ChatID) {
+        return bot.sendMessage(msg.chat.id, 'You cannot use this command.');
+    }
+
+    const text = msg.text;
+    const newText = text.replace('/finish', '').trim();
+
+    const users = jn.get('users');
+    const tuttiGliId = users.map(entry => entry.user.id);
+
+    // Notify all users that bot is offline
+    tuttiGliId.forEach(chatId => {
+        bot.sendMessage(chatId, `✨ ${newText}`);
+    });
+});
+
 // Store new users in database
 bot.on('message', (msg) => {
     if (!utente) return;
 
-    let user = jn.get('users') || []; 
+    let users = jn.get('users') || [];
     const esiste = users.some(entry => entry.user.id === msg.chat.id);
 
     if (!esiste) {
@@ -216,7 +234,7 @@ bot.on('message', async (msg) => {
         }
     } else {
         await addReactioN(token, msg.chat.id, msg.message_id, '👀');
-        try{
+        try {
             const outputTemplate = path.join(userDir, "%(title)s.%(ext)s");
             await execPromise(`yt-dlp -o "${outputTemplate}" -Uv "${text}"`);
             other = true;
@@ -236,12 +254,23 @@ bot.on('message', async (msg) => {
         file.endsWith('.mp4') || file.endsWith('.jpg') || file.endsWith('.png') || file.endsWith('.webp') || file.endsWith('.webm')
     );
 
+    // Remove unnecessary audio and files BEFORE processing
+    fs.readdirSync(userDir).forEach(file => {
+        if (file.endsWith('.mp3') || file.endsWith('.json') || file.endsWith('.txt') || file.endsWith('.m3u8')) {
+            fs.unlinkSync(path.join(userDir, file));
+        }
+    });
+
     const video = files.find(file => file.endsWith('.mp4') || file.endsWith('.webm'));
     const photo = files.find(file => file.endsWith('.jpg') || file.endsWith('.png') || file.endsWith('.webp'));
+
+    //Call a function to clean the caption
+    const caption = cleanCaption(photo || video);
 
     // Handling single file downloads
     if (files.length === 1) {
         if (video) {
+
             const inputPath = path.join(userDir, video);
             const stats = fs.statSync(inputPath);
             const fileSizeInBytes = stats.size;
@@ -265,8 +294,9 @@ bot.on('message', async (msg) => {
                 bot.sendVideo(msg.chat.id, file, {
                     filename: path.basename(outputFile),
                     contentType: 'video/mp4',
-                    caption: 'Here is the video. 😻 - @VeloceVid_bot',
+                    caption: `Here is the video\\. 😻 \\- @VeloceVid\\_bot\n>${caption}`,
                     reply_to_message_id: msg.message_id,
+                    parse_mode: 'MarkdownV2'
                 }).then(() => {
                     fs.unlinkSync(outputFile);
                 });
@@ -276,20 +306,23 @@ bot.on('message', async (msg) => {
                 const file = fs.createReadStream(path.join(userDir, video));
                 bot.sendVideo(msg.chat.id, file, {
                     filename: video,
-                    contentType: 'video/mp4',
-                    caption: 'Here is the video. 😻 - @VeloceVid_bot',
+                    contentType: 'video',
+                    caption: `Here is the video\\. 😻 \\- @VeloceVid\\_bot\n>${caption}`,
                     reply_to_message_id: msg.message_id,
+                    parse_mode: 'MarkdownV2'
                 }).then(() => {
                     fs.unlinkSync(path.join(userDir, video));
                 });
             }
         } else {
+
             const file = fs.createReadStream(path.join(userDir, photo));
             bot.sendPhoto(msg.chat.id, file, {
                 filename: photo,
                 contentType: 'photo',
-                caption: 'Here are pictures. 😻 - @VeloceVid_bot',
+                caption: `Here are pictures\\. 😻 \\- @VeloceVid\\_bot\n> ${caption}`,
                 reply_to_message_id: msg.message_id,
+                parse_mode: 'MarkdownV2'
             }).then(() => {
                 fs.unlinkSync(path.join(userDir, photo));
             });
@@ -313,11 +346,11 @@ bot.on('message', async (msg) => {
                 const mediaGroup = group.map((file, index) => ({
                     type: 'photo',
                     media: fs.createReadStream(path.join(userDir, file)),
-                    caption: index === 0 ? 'Here are pictures. 😻 - @VeloceVid_bot' : undefined,
+                    caption: index === 0 ? 'Here are pictures. 😻 - @VeloceVid_bot' : undefined
                 }));
 
                 await bot.sendMediaGroup(msg.chat.id, mediaGroup, {
-                    reply_to_message_id: msg.message_id,
+                    reply_to_message_id: msg.message_id
                 });
             }
         }
@@ -353,7 +386,7 @@ bot.on('message', async (msg) => {
                 }
 
                 await bot.sendMediaGroup(msg.chat.id, processedGroup, {
-                    reply_to_message_id: msg.message_id,
+                    reply_to_message_id: msg.message_id
                 });
             }
         }
@@ -399,4 +432,28 @@ function execPromise(command) {
             resolve(stdout ? stdout : stderr);
         });
     });
+}
+
+//Function that is used to clean the caption
+function cleanCaption(text) {
+    // 1. remove the extensions
+    text = text.replace(/\.(webp|jpg|png|mp4|webm)$/i, '');
+
+    // 2. remove the numbers
+    text = text.replace(/[0-9]/g, '');
+
+    // 3. remove content between []
+    text = text.replace(/\[.*?\]/g, '');
+
+    // 4. escape markdownV2
+    text = text.replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1');
+
+    // 5. remove the underscore
+    text = text.replace(/_/g, '');
+
+    // 6. remove final backslash
+    text = text.replace(/\\+$/, '');
+
+    // 7. final trim
+    return text.trim();
 }
